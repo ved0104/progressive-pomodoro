@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +11,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Line, Pie } from "react-chartjs-2";
+import { getSessions } from "../api";
 
 ChartJS.register(
   CategoryScale,
@@ -24,12 +25,38 @@ ChartJS.register(
 );
 
 export default function Analytics({ sessionData }) {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      setLoadError("");
+      const data = await getSessions();
+      if (!active) return;
+      if (!Array.isArray(data)) {
+        setLoadError("Failed to load analytics from the database.");
+        setSessions([]);
+      } else {
+        setSessions(data);
+      }
+      setLoading(false);
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const stats = useMemo(() => {
     // Group sessions by date
     const dailyData = {};
     const monthlyData = {};
 
-    sessionData.forEach((session) => {
+    sessions.forEach((session) => {
       const date = session.date;
       const month = date.substring(0, 7); // YYYY-MM
 
@@ -49,7 +76,7 @@ export default function Analytics({ sessionData }) {
     });
 
     return { dailyData, monthlyData };
-  }, [sessionData]);
+  }, [sessions]);
 
   // Get last 7 days for daily chart
   const last7Days = useMemo(() => {
@@ -152,12 +179,12 @@ export default function Analytics({ sessionData }) {
 
   // Calculate total stats
   const totalFocusMinutes = Math.round(
-    (sessionData.reduce((sum, s) => sum + s.focusDuration, 0) / 60) * 100
+    (sessions.reduce((sum, s) => sum + s.focusDuration, 0) / 60) * 100
   ) / 100;
   const totalBreakMinutes = Math.round(
-    (sessionData.reduce((sum, s) => sum + s.breakDuration, 0) / 60) * 100
+    (sessions.reduce((sum, s) => sum + s.breakDuration, 0) / 60) * 100
   ) / 100;
-  const totalSessions = sessionData.length;
+  const totalSessions = sessions.length;
   const avgFocusPerSession = totalSessions > 0 ? (totalFocusMinutes / totalSessions).toFixed(2) : 0;
 
   // Today's stat
@@ -169,6 +196,12 @@ export default function Analytics({ sessionData }) {
   return (
     <div className="analytics">
       <h2>Your Analytics</h2>
+
+      {loading && <p>Loading analytics from the database...</p>}
+      {!loading && loadError && <p>{loadError}</p>}
+      {!loading && !loadError && sessions.length === 0 && (
+        <p>No database sessions yet. Complete a session to see analytics.</p>
+      )}
 
       <div className="stats-summary">
         <div className="stat-card">

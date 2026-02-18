@@ -33,7 +33,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Pomodoro backend is running' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Pomodoro backend running on http://localhost:${PORT}`);
-});
+// Start server locally only
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Pomodoro backend running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

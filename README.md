@@ -1,7 +1,7 @@
 # Progressive Pomodoro Timer
 
 A modern, feature-rich Pomodoro timer application built with React, Vite, and MongoDB. Track your focus sessions, visualize productivity analytics, and optimize your workflow with real-time data persistence.
-
+[UI](UI.png)
 ## Features
 
 ✅ **Focus Timer** - 25-minute focus sessions (customizable, minimum 1 minute)  

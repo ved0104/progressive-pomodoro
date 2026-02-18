@@ -223,7 +223,7 @@ button:active {
 .analytics-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
 }
 
 .back-btn {
